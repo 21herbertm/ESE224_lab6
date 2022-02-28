@@ -1,7 +1,26 @@
 """
-@author: Vinicius Lima
-This function predicts spoken digits stored in "test_set.npy" by comparing their spectra
-against the average spectrum of the training set (stored in "spoken_digits_DFTs.npy").
+MELANIE HERBERT, ALINA HO
+ESE 224 LAB 6
+
+AVERAGE_COMP FILE
+
+QUESTION 2 COMPARISON WITH AVERAGE SPECTRUM
+
+For each of the training sets
+define the average spectral magnitudes
+(1)
+Further define the inner product p(X,Y) between the spectra of any two
+signals X and Y as the inner product between their absolute values,
+
+(2)
+Compare the inner product p(X,Y¯) between the unknown spectrum X
+and the average spectrum Y¯ with the inner product p(X, Z¯) between the
+unknown spectrum X and the average spectrum Z
+
+IN TANDEM WITH TEST_SET FILE, THIS FUNCTION WILL THEN PREDICT THE SPOKEN DIGITS THAT HAVE BEEN
+STORED IN THE NPY FILE FROM TEST SET.
+
+IN ORDER TO DO THIS, THIS FUNCTION COMPARES AGAINST THE AVERAGE SPECTRIUM OF THE TRAINING SET.
 """
 import numpy as np
 import time

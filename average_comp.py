@@ -28,60 +28,82 @@ import time
 from dft import dft
 from recordsound import recordsound
 
-def print_matrix(A, nr_decimals = 2):
+def print_matrix(A, num_of_decimals = 2):
 
-    # Determine the number of digits in the largest number in the matrix and use
-    # it to specify the number format
+    # NEED NUMBER OF DIGITS IN LARGEST NUMBER IN THE MATRIX
+    # NEED TO FIND THE NUMBER FORMAT
 
-    nr_digits = np.maximum(np.floor(np.log10(np.amax(np.abs(A)))),0) + 1
-    nr_digits = nr_digits + nr_decimals + 3
-    nr_digits = "{0:1.0f}".format(nr_digits)
-    number_format = "{0: " + nr_digits + "." + str(nr_decimals) + "f}"
+
+    # Compare two arrays and returns a new array containing the element-wise maxima. If one of the elements being compared
+    # is a NaN, then that element is returned. If both elements are NaNs then the first is returned.
+    # The latter distinction is important for complex NaNs,
+    # which are defined as at least one of the real or imaginary parts being a NaN. The net effect is that NaNs are propagated.
+    num_of_digits = np.maximum(np.floor(np.log10(np.amax(np.abs(A)))),0) + 1
+    num_of_digits = num_of_digits + num_of_decimals + 3
+    num_of_digits = "{0:1.0f}".format(num_of_digits)
+    number_format = "{0: " + num_of_digits + "." + str(num_of_decimals) + "f}"
     
-    # Determine matrix size
-    n = len(A)
-    m = len(A[0])
+    # SET MATRIX SIZE
+    columns= len(A)
+    rows = len(A[0])
 
-    # Sweep through rows
-    for l in range(m):
+    # LOOPS THROUGH EACH ROW OF THE MATRIX OF DIGITS
+    for l in range(rows):
         value = " "
 
-        # Sweep through columns
-        for k in range(n):
+        # LOOPS THROUGH EACH OF THE COLUMNS OF THE DIGITS THE ENCOMPASS THE MATRIX
+        for k in range(columns):
 
-            # ccncatenate entries to create row printout
+            # ALLOCATING THE FINAL VALUE BY ADDTING IN EACH ITEM FROM L AND K LOOPS
             value = value + " " + number_format.format(A[k,l])
 
-        # Print row
+        # PRINTS THE FINAL ROW VALUE
         print( value )
 
 if __name__ == '__main__':
     T = 1  # recording time
     fs = 8000  # sampling frequency
 
-    # loads test set
+    # REFERENCE TO TEST_SET.PY FILE
     test_set = np.load("test_set.npy")
 
-    # loads (DFTs of) training set
+    # INSERTS THE DFTS FROM THE TRAINING SET
+    # Calculate the absolute value element-wise.
     training_set_DFTs = np.abs(np.load("spoken_digits_DFTs.npy"))
-    # Average spectra
     num_digits = len(training_set_DFTs)
     _, N = training_set_DFTs[0].shape
     average_spectra = np.zeros((num_digits, N), dtype=np.complex_)
 
+    # LOOP FOR THE AVERAGE SPECTRA
     for i in range(num_digits):
         average_spectra[i, :] = np.mean(training_set_DFTs[i], axis=0) 
 
-    num_recs, N = test_set.shape
-    predicted_labels = np.zeros(num_recs)
+    num_of_recordings, N = test_set.shape
+    predicted_labels = np.zeros(num_of_recordings)
 
-    # Computes (normalized) DFTs of the test set
-    DFTs_aux = np.zeros((num_recs, N), dtype=np.complex_)
-    DFTs_c_aux = np.zeros((num_recs, N), dtype=np.complex_)
-    
-    for i in range(num_recs):
+    # FINDS A NORMALIZED DFT OF THE TEST SET
+    DFTs_aux = np.zeros((num_of_recordings, N), dtype=np.complex_)
+    DFTs_c_aux = np.zeros((num_of_recordingss, N), dtype=np.complex_)
+
+
+    # LOOP THROUGH EACH OF THE RECORDINGS IN ORDER TO ALLOCATE THE NORM OF THE ITH SIGNAL
+    #NORMALIZING THE DFT
+    for i in range(num_of_recordings):
+        """
+        this is assigning a vector to a slice of numpy 2D array (slice assignment). 
+        Self-contained example:
+
+>>> import numpy
+>>> a = numpy.array([[0,0,0],[1,1,1]])
+>>> a[0,:] = [3,4,5]
+>>> a
+array([[3, 4, 5],
+       [1, 1, 1]])
+There is also slice assignment in base python, using only one dimension (a[:] = [1,2,3])
+        
+        """
         rec_i = test_set[i, :]
-        # We can use the norm of the ith signal to normalize its DFT
+
         energy_rec_i = np.linalg.norm(rec_i)
         rec_i /= energy_rec_i
         DFT_rec_i = dft(rec_i, fs)
@@ -89,18 +111,20 @@ if __name__ == '__main__':
         DFTs_aux[i, :] = X 
         DFTs_c_aux[i, :] = X_c
 
-        # Inner products
+        # SETTING INNER PRODUCTS TO 0'S
         inner_prods = np.zeros(num_digits) 
         for j in range(num_digits):
+            # ALLOCATING INNER PRODUCT
             inner_prods[j] = np.inner(np.abs(X), np.abs(average_spectra[j, :]))
         predicted_labels[i] = np.argmax(inner_prods) + 1
-    
+
+    # DISPLAYS THE AVERAGE SPECTRUM COMPARISON
     print("Average spectrum comparison --- predicted labels: \n")
-    print_matrix(predicted_labels[:, None], nr_decimals=0)
+    print_matrix(predicted_labels[:, None], num_of_decimals=0)
     
-    # Storing DFTs
+    # SAVES THE DFTS IN A NPY FILE
     np.save("test_set_DFTs.npy", DFTs_aux)
     np.save("test_set_DFTs_c.npy", DFTs_c_aux)
 
-    # Storing predicted labels
+    # STORES PREDICTED VALUES IN NPY
     np.save("predicted_labels_avg.npy", predicted_labels)
